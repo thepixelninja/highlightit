@@ -23,8 +23,8 @@ $.fn.highlightIT = function(options){
 	var hl 		= {};
 
 	if(options.editMode){
-		options.lineColor = "red";
 		options.fillColor = "red";
+		options.lineColor = "red";
 	}
 
 	hl.events = function(){
@@ -36,20 +36,23 @@ $.fn.highlightIT = function(options){
 		hl.canvas.on("mousemove",function(e){
 			hl.hoverShape = hl.shapeCollisionListener(e);
 			if(typeof(options.hover) === "function"){
-				options.hover(hl.hoverShape,hl,options);
+				options.hover(hl.hoverShape,hl,options,e);
 			}
 		});
 
 		hl.canvas.on("click",function(e){
+			hl.clear();
+			hl.drawShapes();
 			if(options.editMode){
 				var position = hl.getMousePosition(e);
-				hl.lineTo(position,hl.currentPath,hl.currentPath.length);
 				hl.updatePath(position);
+				hl.drawPath();
 			}
 			if(hl.hoverShape){
 				hl.selectedShape = hl.hoverShape;
+				hl.drawShape(hl.selectedShape);
 				if(typeof(options.click) === "function"){
-					options.click(hl.selectedShape,hl,options);
+					options.click(hl.selectedShape,hl,options,e);
 				}
 			}else{
 				hl.selectedShape = false;
@@ -74,8 +77,8 @@ $.fn.highlightIT = function(options){
 		});
 
 		hl.buttons.del.on("click",function(){
-			shapes 		   = [];
-			hl.currentPath = [];
+			var shapes 	     = [];
+			hl.currentPath   = [];
 			$.each(hl.shapes,function(i,shape){
 				if(hl.selectedShape !== shape){
 					shapes.push(shape);
@@ -213,6 +216,15 @@ $.fn.highlightIT = function(options){
 
 	}
 
+	hl.drawPath = function(){
+
+		$.each(hl.currentPath,function(i,line){
+			hl.lineTo(line,hl.currentPath,i);
+		});
+
+
+	}
+
 	hl.updatePath = function(position){
 
 		hl.currentPath.push(position);
@@ -339,17 +351,17 @@ $.fn.highlightIT = function(options){
 			left		: 0,
 			width		: "100%",
 			height		: "100%",
-			"z-index"	: 20
+			"z-index"	: 8
 		});
 
         var opacity = 0;
 		if(options.debug){
 			opacity = 0.5;
-		}     
+		}
 
 		hl.utilityCanvas.css({
 			opacity 	: opacity,
-			"z-index"	: 19
+			"z-index"	: 7
 		});
 
 		hl.buttons.container.css({
